@@ -85,23 +85,23 @@ begin
 	--tmp_addr <= INPUT_1(31 downto 13);
 	--pixel <= INPUT_1(7 downto 0);
 --	
-	process (clock)
-	begin
-		IF clock'event AND clock = '1' THEN
-			IF reset = '1' THEN
-				counter <= 0;
-			ELSE
-				IF vga_w_en = '1' THEN
-					IF counter < 307199 THEN
-					--IF counter < 16383 THEN
-						counter <= counter + 1;
-					ELSE
-						counter <= 0;
-					END IF;
-				END IF;
-			END IF;
-		END IF;
-	end process;
+--	process (clock)
+--	begin
+--		IF clock'event AND clock = '1' THEN
+--			IF reset = '1' THEN
+--				counter <= 0;
+--			ELSE
+--				IF vga_w_en = '1' THEN
+--					IF counter < 307199 THEN
+--					--IF counter < 16383 THEN
+--						counter <= counter + 1;
+--					ELSE
+--						counter <= 0;
+--					END IF;
+--				END IF;
+--			END IF;
+--		END IF;
+--	end process;
 --	
 --
 --	process (clock, reset)
@@ -124,7 +124,7 @@ begin
 --	end process;
 --	
 
-	tmp_addr <= std_logic_vector(to_signed(counter, 19));
+--	tmp_addr <= std_logic_vector(to_signed(counter, 19));
 	
 		vga : VGA_bitmap_640x480 generic map(12, false)           -- should data be displayed in grayscale
 		port map(

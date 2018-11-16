@@ -182,7 +182,11 @@ architecture logic of plasma is
    signal eth_pause_in      : std_logic;
    signal eth_pause         : std_logic;
    signal mem_busy          : std_logic;
-
+   
+   signal enable_ram_vga    : std_logic;
+   signal vga_ram_we        : std_logic;
+   signal ram_data_vga      : std_logic_vector(11 downto 0);
+   
    signal enable_misc       : std_logic;
    signal enable_uart       : std_logic;
    signal enable_uart_read  : std_logic;
@@ -330,6 +334,24 @@ architecture logic of plasma is
          VGA_green       : out std_logic_vector(3 downto 0);   -- green output
          VGA_blue        : out std_logic_vector(3 downto 0)   -- blue output
       );
+   end component;
+   
+   component VGA_bitmap_640x480 is
+     generic(bit_per_pixel : integer range 1 to 12:=12;    -- number of bits per pixel
+             grayscale     : boolean := false);           -- should data be displayed in grayscale
+     port(clk          : in  std_logic;
+          clk_vga      : in  std_logic;
+          reset        : in  std_logic;
+          VGA_hs       : out std_logic;   -- horisontal vga syncr.
+          VGA_vs       : out std_logic;   -- vertical vga syncr.
+          VGA_red      : out std_logic_vector(3 downto 0);   -- red output
+          VGA_green    : out std_logic_vector(3 downto 0);   -- green output
+          VGA_blue     : out std_logic_vector(3 downto 0);   -- blue output
+   
+          ADDR         : in  std_logic_vector(18 downto 0);
+          data_in      : in  std_logic_vector(bit_per_pixel - 1 downto 0);
+          data_write   : in  std_logic;
+          data_out     : out std_logic_vector(bit_per_pixel - 1 downto 0));
    end component;
 
 	component ctrl_SL is
@@ -598,9 +620,26 @@ begin  --architecture
          data_out   => ram_data_lm
 		);
 
-	--
-	--
-	--
+
+vga_bloc : VGA_bitmap_640x480 generic map(bit_per_pixel => 12,    -- number of bits per pixel
+                                          grayscale     => true)           -- should data be displayed in grayscale
+  port map (clk => clk,
+		 clk_vga => clk_VGA,
+       reset => reset,
+       VGA_hs => VGA_hs,   -- horisontal vga syncr.
+       VGA_vs => VGA_vs,   -- vertical vga syncr.
+       VGA_red =>  VGA_red,   -- red output
+       VGA_green => VGA_green,   -- green output
+       VGA_blue => VGA_blue,   -- blue output
+       ADDR => ram_address(20 downto 2),
+       data_in => ram_data_w(11 downto 0),
+       data_write => vga_ram_we,
+       data_out => ram_data_vga );
+       
+   vga_ram_we <= ram_byte_we(0) and enable_ram_vga; 
+	
+	
+	
    u1_cpu: mlite_cpu
       generic map (memory_type => memory_type)
       PORT MAP (
@@ -674,13 +713,9 @@ begin  --architecture
 
 			-- ON LIT LES DONNEES DE LA MEMOIRE EXTERNE (LOCAL RAM)
       	when "001" =>         --external (local) RAM
-         	--if cache_checking = '1' then
-         	--cpu_data_r <= ram_data_r; --cache
-         	--else
-         	--cpu_data_r <= data_read; --DDR
-         	--end if;
 				cpu_data_r <= ram_data_lm;
-
+      	when "101" =>         --external (local) RAM
+             cpu_data_r <= "00000000000000000000"&ram_data_vga;      
 			-- ON LIT LES DONNEES DES PERIPHERIQUES MISC.
 	when "010" =>         --misc
          	case cpu_address(8 downto 4) is
@@ -801,6 +836,12 @@ begin  --architecture
          else
             enable_local_mem <= '0';
          end if;
+         if address_next(31 downto 28) = "0101" then -- 
+            enable_ram_vga <= '1';
+         else
+            enable_ram_vga <= '0';
+         end if;
+
          ram_byte_we              <= byte_we_next;
          ram_address(31 downto 2) <= address_next(31 downto 2);
          ram_data_w               <= cpu_data_w;
@@ -1364,6 +1405,5 @@ begin  --architecture
 --		VGA_green => VGA_green,
 --		VGA_blue => VGA_blue
 --	);
-
 
 end; --architecture logic

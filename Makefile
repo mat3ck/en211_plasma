@@ -140,6 +140,15 @@ BUILD_DIRS += $(OBJ)/i2c
 BUILD_BINS += $(BIN)/i2c.bin
 PROJECTS += $(I2C)
 
+TSI = $(BIN)/tsi.bin
+TSI_HDL = $(BIN)/tsi.txt
+TSI_FILES = main.c
+TSI_SOURCES = $(addprefix $(C)/tsi/Sources/,$(TSI_FILES))
+TSI_OBJECTS = $(addprefix $(OBJ)/tsi/,$(TSI_FILES:.c=.o))
+BUILD_DIRS += $(OBJ)/tsi
+BUILD_BINS += $(BIN)/tsi.bin
+PROJECTS += $(TSI)
+
 # Plasma SoC
 
 PLASMA_SOC = $(BIN)/plasma.bit
@@ -168,7 +177,13 @@ PLASMA_SOC_FILES = alu.vhd \
 	txt_util.vhd \
 	vga_bitmap_160x100.vhd \
 	vga_ctrl.vhd \
-	vgd_bitmap_640x480.vhd
+	vgd_bitmap_640x480.vhd \
+	coproc_4.vhd \
+	function_1.vhd \
+	function_2.vhd \
+	function_3.vhd \
+	function_4.vhd \
+	function_5.vhd
 PLASMA_SOC_SOURCES = $(addprefix $(PLASMA)/,$(PLASMA_SOC_FILES))
 PLASMA_SOC_TOP = top_plasma
 
@@ -182,8 +197,8 @@ BUILD_DIRS += $(OBJ)/plasma
 
 # Configuration
 
-CONFIG_PROJECT ?= hello
-CONFIG_TARGET ?= nexys4_DDR
+CONFIG_PROJECT ?= tsi
+CONFIG_TARGET ?= nexys4
 CONFIG_PART ?= xc7a100tcsg324-1
 CONFIG_SERIAL ?= /dev/ttyUSB1
 CONFIG_UART ?= yes
@@ -220,6 +235,9 @@ PROJECT_HDL = $(SEVEN_SEGMENTS_HDL)
 else ifeq ($(CONFIG_PROJECT),i2c)
 PROJECT = $(I2C)
 PROJECT_HDL = $(I2C_HDL)
+else ifeq ($(CONFIG_PROJECT),tsi)
+PROJECT = $(TSI)
+PROJECT_HDL = $(TSI_HDL)
 endif
 
 PLASMA_SOC_GENERICS =
@@ -456,7 +474,23 @@ $(I2C_HDL): $(SHARED_OBJECTS_ASM) $(SHARED_OBJECTS) $(I2C_OBJECTS) $(CONVERT_BIN
 	cp $(OBJ)/i2c/i2c_hdl.txt $@
 
 .PHONY: i2c
-i2c: $(I2C) $(I2C_HDL)
+tsi: $(I2C) $(I2C_HDL)
+
+$(TSI_OBJECTS): $(OBJ)/tsi/%.o: $(C)/tsi/Sources/%.c | $(BUILD_DIRS)
+	$(CC_MIPS) $(CFLAGS_MIPS) -o $@ $<
+
+$(TSI): $(SHARED_OBJECTS_ASM) $(SHARED_OBJECTS) $(TSI_OBJECTS) $(CONVERT_BIN) | $(BUILD_DIRS)
+	$(LD_MIPS) -Ttext $(ENTRY_LOAD) -eentry -Map $(OBJ)/tsi/tsi.map -s -N -o $(OBJ)/tsi/tsi.axf $(SHARED_OBJECTS_ASM) $(SHARED_OBJECTS) $(TSI_OBJECTS)
+	$(CONVERT_BIN) $(OBJ)/tsi/tsi.axf $(OBJ)/tsi/tsi.bin $(OBJ)/tsi/tsi.txt
+	cp $(OBJ)/tsi/tsi.bin $@
+
+$(TSI_HDL): $(SHARED_OBJECTS_ASM) $(SHARED_OBJECTS) $(TSI_OBJECTS) $(CONVERT_BIN) | $(BUILD_DIRS)
+	$(LD_MIPS) -Ttext $(ENTRY_HDL) -eentry -Map $(OBJ)/tsi/tsi_hdl.map -s -N -o $(OBJ)/tsi/tsi_hdl.axf $(SHARED_OBJECTS_ASM) $(SHARED_OBJECTS) $(TSI_OBJECTS)
+	$(CONVERT_BIN) $(OBJ)/tsi/tsi_hdl.axf $(OBJ)/tsi/tsi_hdl.bin $(OBJ)/tsi/tsi_hdl.txt
+	cp $(OBJ)/tsi/tsi_hdl.txt $@
+
+.PHONY: tsi
+tsi: $(TSI) $(TSI_HDL)
 
 .PHONY: project
 project: $(PROJECT) $(PROJECT_HDL)

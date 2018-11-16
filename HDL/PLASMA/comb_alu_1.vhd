@@ -33,11 +33,11 @@ architecture logic of comb_alu_1 is
 	signal sDESIGN_ID 		: STD_LOGIC_VECTOR(31 downto 0);
 	signal INTPUT_LDPC 		: STD_LOGIC_VECTOR(31 downto 0);
 
---	SIGNAL RESULT_1  : STD_LOGIC_VECTOR(31 downto 0);
---	SIGNAL RESULT_2  : STD_LOGIC_VECTOR(31 downto 0);
---	SIGNAL RESULT_3  : STD_LOGIC_VECTOR(31 downto 0);
---	SIGNAL RESULT_4  : STD_LOGIC_VECTOR(31 downto 0);
---	SIGNAL RESULT_5  : STD_LOGIC_VECTOR(31 downto 0);
+	SIGNAL RESULT_1  : STD_LOGIC_VECTOR(31 downto 0);
+	SIGNAL RESULT_2  : STD_LOGIC_VECTOR(31 downto 0);
+	SIGNAL RESULT_3  : STD_LOGIC_VECTOR(31 downto 0);
+	SIGNAL RESULT_4  : STD_LOGIC_VECTOR(31 downto 0);
+	SIGNAL RESULT_5  : STD_LOGIC_VECTOR(31 downto 0);
 --	SIGNAL RESULT_6  : STD_LOGIC_VECTOR(31 downto 0);
 --	SIGNAL RESULT_7  : STD_LOGIC_VECTOR(31 downto 0);
 --	SIGNAL RESULT_8  : STD_LOGIC_VECTOR(31 downto 0);
@@ -54,11 +54,11 @@ architecture logic of comb_alu_1 is
 --	SIGNAL RESULT_19 : STD_LOGIC_VECTOR(31 downto 0);
 begin
 
---	FX1  : ENTITY WORK.function_1  PORT MAP( INPUT_1  => a_in, INPUT_2  => b_in, OUTPUT_1 => RESULT_1 );
---	FX2  : ENTITY WORK.function_2  PORT MAP( INPUT_1  => a_in, INPUT_2  => b_in, OUTPUT_1 => RESULT_2 );
---	FX3  : ENTITY WORK.function_3  PORT MAP( INPUT_1  => a_in, INPUT_2  => b_in, OUTPUT_1 => RESULT_3 );
---	FX4  : ENTITY WORK.function_4  PORT MAP( INPUT_1  => a_in, INPUT_2  => b_in, OUTPUT_1 => RESULT_4 );
---	FX5  : ENTITY WORK.function_5  PORT MAP( INPUT_1  => a_in, INPUT_2  => b_in, OUTPUT_1 => RESULT_5 );
+	FX1  : ENTITY WORK.function_1  PORT MAP( INPUT_1  => a_in, INPUT_2  => b_in, OUTPUT_1 => RESULT_1 );
+	FX2  : ENTITY WORK.function_2  PORT MAP( INPUT_1  => a_in, INPUT_2  => b_in, OUTPUT_1 => RESULT_2 );
+	FX3  : ENTITY WORK.function_3  PORT MAP( INPUT_1  => a_in, INPUT_2  => b_in, OUTPUT_1 => RESULT_3 );
+	FX4  : ENTITY WORK.function_4  PORT MAP( INPUT_1  => a_in, INPUT_2  => b_in, OUTPUT_1 => RESULT_4 );
+	FX5  : ENTITY WORK.function_5  PORT MAP( INPUT_1  => a_in, INPUT_2  => b_in, OUTPUT_1 => RESULT_5 );
 --	FX6  : ENTITY WORK.function_6  PORT MAP( INPUT_1  => a_in, INPUT_2  => b_in, OUTPUT_1 => RESULT_6 );
 --	FX7  : ENTITY WORK.function_7  PORT MAP( INPUT_1  => a_in, INPUT_2  => b_in, OUTPUT_1 => RESULT_7 );
 --	FX8  : ENTITY WORK.function_8  PORT MAP( INPUT_1  => a_in, INPUT_2  => b_in, OUTPUT_1 => RESULT_8 );
@@ -76,11 +76,11 @@ begin
 	
 	with alu_function select
 	c_alu <=
---			RESULT_1  WHEN "000001",-- (01)
---			RESULT_2  WHEN "000101",-- (05)
---			RESULT_3  WHEN "001010",-- (0A)
---			RESULT_4  WHEN "011110",-- (1E)
---			RESULT_5  WHEN "011111",-- (1F)
+			RESULT_1  WHEN "000001",-- (01)
+			RESULT_2  WHEN "000101",-- (05)
+			RESULT_3  WHEN "001010",-- (0A)
+			RESULT_4  WHEN "011110",-- (1E)
+			RESULT_5  WHEN "011111",-- (1F)
 --			RESULT_6  WHEN "101001",-- (29)
 --			RESULT_7  WHEN "101100",-- (2C)
 --			RESULT_8  WHEN "101110",-- (2E)

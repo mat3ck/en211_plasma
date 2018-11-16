@@ -59,7 +59,7 @@ architecture Behavioral of VGA_bitmap_640x480 is
 	 begin                                                        
        for I in GRAM'range loop                                  
            readline (ram_file, line_name);                              
-           read (line_name, ram_name(I));                                  
+           read (line_name, ram_name(I));
        end loop;                                                    
        return ram_name;                                                  
 	end function;                                                
@@ -100,12 +100,12 @@ begin
 process (clk)
 begin
    if (clk'event and clk = '1') then
---      if (<enableA> = '1') then
+      --if (<enableA> = '1') then
          if (data_write = '1') then
             screen(to_integer(unsigned(ADDR))) <= TO_BitVector( data_in );
          end if;
-         --data_out <= To_StdLogicVector( screen(to_integer(unsigned(ADDR))) );
---      end if;
+         data_out <= To_StdLogicVector( screen(to_integer(unsigned(ADDR))) );
+      --end if;
    end if;
 end process;
 
@@ -120,7 +120,6 @@ end process;
 
 --------------------------------------------------------------------------------
 
-
 pixel_read_addr : process(clk_vga)
 begin
    if clk_vga'event and clk_vga='1' then
@@ -128,11 +127,23 @@ begin
          pix_read_addr <= 0;
       elsif TOP_line and (h_counter mod 4)=0 then
          pix_read_addr <= pix_read_addr + 1;
-		elsif (pix_read_addr = 307199) then
-		   pix_read_addr <= 0;
       end if;
    end if;
 end process;
+
+
+--pixel_read_addr : process(clk_vga)
+--begin
+--   if clk_vga'event and clk_vga='1' then
+--      if reset = '1' or (not TOP_display) then
+--         pix_read_addr <= 0;
+--      elsif TOP_line and (h_counter mod 4)=0 then
+--         pix_read_addr <= pix_read_addr + 1;
+--		elsif (pix_read_addr = 307199) then
+--		   pix_read_addr <= 0;
+--      end if;
+--   end if;
+--end process;
 
 
 -- this process manages the horizontal synchro using the counters
@@ -236,9 +247,16 @@ begin
                VGA_green <= next_pixel(4 downto 2) & next_pixel(4);
                VGA_blue  <= next_pixel(1 downto 0) & next_pixel(1 downto 0);
             when 8 =>
-					VGA_red   <= next_pixel(7 downto 5) & next_pixel(7);
-					VGA_green <= next_pixel(4 downto 2) & next_pixel(4);
-					VGA_blue  <= next_pixel(1 downto 0) & next_pixel(1 downto 0);
+               if grayscale then
+                  VGA_blue  <= next_pixel(7 downto 4);
+                  VGA_green <= next_pixel(7 downto 4);
+                  VGA_red   <= next_pixel(7 downto 4);
+               else
+                  VGA_red   <= next_pixel(7 downto 5) & next_pixel(7);
+                  VGA_green <= next_pixel(4 downto 2) & next_pixel(4);
+                  VGA_blue  <= next_pixel(1 downto 0) & next_pixel(1 downto 0);
+               end if;
+					
             when 9 =>
                VGA_red   <= next_pixel(8 downto 6) & next_pixel(8);
                VGA_green <= next_pixel(5 downto 3) & next_pixel(5);
