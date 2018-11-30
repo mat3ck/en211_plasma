@@ -158,7 +158,26 @@ PLASMA_SOC_FLOW = $(OBJ)/plasma/plasma.tcl
 PLASMA_CUSTOM_FILES = coproc_1.vhd \
 	coproc_2.vhd \
 	coproc_3.vhd \
-	coproc_4.vhd
+	coproc_4.vhd \
+	function_1.vhd \
+	function_2.vhd \
+	function_3.vhd \
+	function_4.vhd \
+	function_5.vhd \
+	function_6.vhd \
+	function_7.vhd \
+	function_8.vhd \
+	function_9.vhd \
+	function_10.vhd \
+	function_11.vhd \
+	function_12.vhd \
+	function_13.vhd \
+	function_14.vhd \
+	function_15.vhd \
+	function_16.vhd \
+	function_17.vhd \
+	function_18.vhd \
+	function_19.vhd 
 PLASMA_CUSTOM_SOURCES = $(addprefix $(CUSTOM)/$(CONFIG_PROJECT)/,$(PLASMA_CUSTOM_FILES))
 PLASMA_SOC_FILES = alu.vhd \
 	bus_mux.vhd \
@@ -520,7 +539,7 @@ $(PLASMA_SOC): $(PLASMA_SOC_SOURCES) $(BOOT_LOADER_HDL) | $(BUILD_DIRS)
 	echo "route_design" >> $(PLASMA_SOC_FLOW)
 	echo "write_bitstream -force $@" >> $(PLASMA_SOC_FLOW)
 	echo "quit" >> $(PLASMA_SOC_FLOW)
-	/opt/xilinx/vivado/2015.2/Vivado/2015.2/bin/vivado -source $(PLASMA_SOC_FLOW) -mode tcl -nolog -nojournal
+	vivado -source $(PLASMA_SOC_FLOW) -mode tcl -nolog -nojournal
 	rm $(PLASMA_SOC_FLOW)
 
 .PHONY: plasma
