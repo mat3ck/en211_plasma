@@ -12,6 +12,14 @@
 
 #include "../Includes/scale.h"
 
+int send_char(int value)
+{
+   while((MemoryRead(IRQ_STATUS) & IRQ_UART_WRITE_AVAILABLE) == 0)
+      ;
+   MemoryWrite(UART_WRITE, value);
+   return 0;
+}
+
 unsigned char wait_data()
 {
 	while( !(MemoryRead(IRQ_STATUS) & IRQ_UART_READ_AVAILABLE) );
@@ -30,8 +38,8 @@ inline void printPixel(char row, char col, int color)
 	MemoryWrite(OLED_BITMAP_RW, buff);
 }
 
-//char red[63][96];
-//char filtered[63][96];
+unsigned char image[63][96];
+//unsigned char small_image[16] = {15, 16, 65, 124, 210, 64, 98, 14, 67, 81, 94, 165, 154, 64, 84, 34};
 
 int main(int argc, char **argv) {
 
@@ -39,7 +47,7 @@ int main(int argc, char **argv) {
 	int W = 96;
 	int r, g, b, pixel;
 	unsigned int start_c, stop_c;
-	unsigned char image[63][96];
+	
 
 	/**********/
 	// Reset the RGB OLED screen and display a white screen
@@ -47,7 +55,9 @@ int main(int argc, char **argv) {
 
 	MemoryWrite(OLED_MUX, OLED_MUX_BITMAP); // Select the RGB OLED Bitmap controler
 	MemoryWrite(OLED_BITMAP_RST, 1); // Reset the oled_rgb PMOD
-	
+	MemoryWrite(SEVEN_SEGMENT_RST, 1); // reset the 7 segment controler
+	MemoryWrite(CTRL_SL_RST, 1); // reset the sw/led controler
+
 	
 	for(int py = 0; py < H; py++)
 	{
@@ -63,8 +73,6 @@ int main(int argc, char **argv) {
 
 	puts("Please, send image from Matlab !\n");
 
-	MemoryWrite(CTRL_SL_RST, 1); // reset the sw/led controler
-
 	int i = 0;
 	for(int py = 0; py < H; py++)
 	{
@@ -75,8 +83,8 @@ int main(int argc, char **argv) {
 			pixel = (r+g+b) / 3;
 
 			image[py][px] = pixel;
-			//pixel = ((r >> 5) << 11) | ((g >> 6) << 5) | (b >> 5);
-			pixel = ((pixel >> 5) << 11) | ((pixel >> 6) << 5) | (pixel >> 5);
+			//pixel = ((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3);
+			pixel = ((pixel >> 3) << 11) | ((pixel >> 2) << 5) | (pixel >> 3);
 			printPixel(py, px, pixel);
 		}
 	}
@@ -84,41 +92,42 @@ int main(int argc, char **argv) {
 	/**********/
 	// Processing
 	/**********/
-	MemoryWrite(CTRL_SL_RW, 1);
+	
 	// Read the timer value before the processing starts
 	start_c = r_timer();
-	//scale_no_opt(vga, H*W);
 
 	// processing the loaded image
-	//scale_no_opt(red, H*W);
-	//scale_opt1(data, pixel_nb);
-	//filtre_1(red, W, H, filtered, coef);
+	//scale_no_opt(image, H*W);
+	//scale_opt1(image, H*W);
+	//scale_opt2(image, H*W);
+	scale_opt3(image, H*W);
+
 
 	// Read the timer value after the processing is over
 	stop_c = r_timer();
-	
-	int fil;
+	MemoryWrite(SEVEN_SEGMENT_REG, (stop_c - start_c));
 
 	/**********/
 	// Display the resulting image
 	/**********/
+
 	MemoryWrite(OLED_BITMAP_RST, 1); // Reset the oled_rgb PMOD
 
-	/*for(int py = 0; py < H-2; py++)
+	for(int py = 0; py < H; py++)
 	{
-		for(int px = 0; px < W-2; px ++){
-			//red[py][px] += 10;
-			fil = (int) red[py][px];
-			pixel = ((fil << 8)& 0xF800) | ((fil << 3)&0x07E0) | ((fil >> 3) & 0x1F);
+		for(int px = 0; px < W; px ++){
+			pixel = image[py][px];
+			pixel = ((pixel >> 3) << 11) | ((pixel >> 2) << 5) | (pixel >> 3);
 			printPixel(py, px, pixel);
+			send_char(image[py][px]);
 		}
-	}*/
+	}
 
 	/**********/
 	// Affichage du nombre de cycles nécessaires au traitement
 	/**********/
-	MemoryWrite(SEVEN_SEGMENT_RST, 1); // reset the 7 segment controler
-	MemoryWrite(SEVEN_SEGMENT_REG, (stop_c - start_c));
+	
+	//MemoryWrite(CTRL_SL_RW, (stop_c - start_c));
 	
 	return(0);
 	

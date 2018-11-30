@@ -3,36 +3,7 @@
 
 #include "../../shared/plasmaCoprocessors.h"
 
-
-void scale_no_opt(int* data, int pixel_nb){
-	int i;
-	unsigned char min, max;
-	unsigned short beta;
-	max = 0;
-	min = 255;
-	int pix, old_pix;
-
-	// Calcul MIN/MAX
-	for(i=0;i<pixel_nb;i++){
-		pix = (data[i] >> 11) << 4;
-		//data[i] = pix & 0xF;
-		if(pix > max) max = pix;
-		if(pix < min) min = pix;
-	}
-
-	// Calcul du Beta
-	beta = 255 << 8; // 255 au format U(8,8)
-	beta = beta / (max-min); // U(8,8)/U(8,0) => U(8,8) 
-	
-	// Mise à l'echelle
-	for(i=0;i<pixel_nb;i++){
-		old_pix = (data[i] >> 8) << 4;
-		pix = ((beta * (old_pix - min)) >> 8) >> 4;
-		data[i] = ((pix << 8) | (pix << 4)) | pix;
-	}	
-}
-
-void scale_no_opt_char(unsigned char* data, int pixel_nb){
+void scale_no_opt(unsigned char* data, int pixel_nb){
 	int i;
 	unsigned char min, max;
 	unsigned short beta;
@@ -148,6 +119,55 @@ void scale_opt3(unsigned char* data, int pixel_nb){
    // On recupere le min et le max
 	min_max = coproc_read(COPROC_1_RW);
 	
+
+
+/*int i;
+	unsigned char min, max;
+	unsigned short beta;
+	unsigned int beta_mini;
+	
+  // packing min and max into a single int
+	max = 0;
+	min = 255;
+	unsigned int min_max;
+	min_max = min << 8 | max;
+	
+	// pointer casting: p points to blocks of 4 bytes (= int)
+	int* p = (int*)data;
+	
+	for(i=0;i<pixel_nb;i+=4){
+		// packing 4 bytes into a single int
+		// update the min and max value using a single instruction
+		// SIMD with P=4 bytes processed in parallel
+		min_max = isa_custom_4(*p, min_max);	
+		p += 1;
+	}*/
+
+
+
+	/*min = min_max >> 8;
+	max = min_max & 0x000000FF;
+
+	my_printf("min:",min);
+	my_printf("max:",max);
+
+	// Calcul du Beta
+	beta = 255 << 8; // 255 au format (8,8)
+	beta = beta / (max-min); // (8,8)/(8,0) => (8,8) 
+	
+	// Mise à l'echelle
+	// packing beta et mini dans une seule variable
+	beta_mini = beta << 16 | min;
+	
+	p = (int*)data;
+	
+	for(i=0;i<pixel_nb/4;i++){
+		*p = isa_custom_5(*p, beta_mini);
+		p +=1;
+	}*/
+
+
+
 	// on repositionne le pointeur au debut du tableau de donnees
 	p = (int*)data;
 	

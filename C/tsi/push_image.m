@@ -19,12 +19,23 @@ s.OutputBufferSize = 1000000;
 s.InputBufferSize = 5000000;
 fopen(s);
 
+% reorder RGB pixels
+image_line = []
 for i = 1:63
     for(j = 1: 96)
-        fwrite(s,image(i,j,1)); % R  
-        fwrite(s,image(i,j,2)); % G
-        fwrite(s,image(i,j,3)); % B
+        image_line = [ image_line image(i,j,1)]; % R  
+        image_line = [ image_line image(i,j,2)]; % G  
+        image_line = [ image_line image(i,j,3)]; % B  
     end    
 end
+
+fwrite(s,image_line);
+
+processed_image = fread(s, 63*96);
+processed_image = uint8( processed_image );
+processed_image = reshape(processed_image, 96, 63)';
+
+imshow(processed_image)
+
 instrreset
 %fclose(s);

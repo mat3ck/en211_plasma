@@ -24,6 +24,7 @@ SYNTHESIS = $(TOP)/SYNTHESIS
 SCRIPTS = $(TOP)/SCRIPTS
 
 PLASMA = $(HDL)/PLASMA
+CUSTOM = $(HDL)/CUSTOM
 TOOLS = $(C)/tools
 OBJ = $(TOP)/OBJ
 BIN = $(TOP)/BIN
@@ -154,6 +155,11 @@ PROJECTS += $(TSI)
 PLASMA_SOC = $(BIN)/plasma.bit
 PLASMA_SOC_BOOTROM = $(PLASMA)/code_bin.txt
 PLASMA_SOC_FLOW = $(OBJ)/plasma/plasma.tcl
+PLASMA_CUSTOM_FILES = coproc_1.vhd \
+	coproc_2.vhd \
+	coproc_3.vhd \
+	coproc_4.vhd
+PLASMA_CUSTOM_SOURCES = $(addprefix $(CUSTOM)/$(CONFIG_PROJECT)/,$(PLASMA_CUSTOM_FILES))
 PLASMA_SOC_FILES = alu.vhd \
 	bus_mux.vhd \
 	cam_pkg.vhd \
@@ -178,13 +184,13 @@ PLASMA_SOC_FILES = alu.vhd \
 	vga_bitmap_160x100.vhd \
 	vga_ctrl.vhd \
 	vgd_bitmap_640x480.vhd \
-	coproc_4.vhd \
 	function_1.vhd \
 	function_2.vhd \
 	function_3.vhd \
 	function_4.vhd \
 	function_5.vhd
 PLASMA_SOC_SOURCES = $(addprefix $(PLASMA)/,$(PLASMA_SOC_FILES))
+PLASMA_SOC_SOURCES += $(PLASMA_CUSTOM_SOURCES)
 PLASMA_SOC_TOP = top_plasma
 
 PLASMA_SIMULATION_FLOW = $(OBJ)/plasma/simulation.tcl
@@ -207,6 +213,7 @@ CONFIG_RGB_OLED ?= yes
 CONFIG_SWITCH_LED ?= yes
 CONFIG_SEVEN_SEGMENTS ?= yes
 CONFIG_I2C ?= yes
+CONFIG_COPROC ?= yes
 
 ifeq ($(CONFIG_PROJECT),hello)
 PROJECT = $(HELLO)
@@ -282,6 +289,13 @@ PLASMA_SOC_GENERICS += eI2C=1'b1
 PLASMA_SOC_FILES += i2c.vhd
 else
 PLASMA_SOC_GENERICS += eI2C=1'b0
+endif
+
+ifeq ($(CONFIG_COPROC),yes)
+PLASMA_SOC_GENERICS += eCoproc=1'b1
+#PLASMA_SOC_FILES += $(PLASMA_CUSTOM_SOURCES)
+else
+PLASMA_SOC_GENERICS += eCoproc=1'b0
 endif
 
 PLASMA_SOC_ARGUMENTS = $(foreach generic,$(PLASMA_SOC_GENERICS),-generic $(generic))
@@ -535,8 +549,6 @@ simulation: $(PLASMA_SOC_SOURCES) $(PROJECT_HDL) | $(BUILD_DIRS)
 	rm output.txt
 	rm -rf xelab* webtalk* xsim*
 
-.PHONY: simu
-simu: simulation
 
 .PHONY: clean
 clean:

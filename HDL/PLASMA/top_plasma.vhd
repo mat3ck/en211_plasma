@@ -24,6 +24,7 @@ entity top_plasma is
            eSwitchLED  : std_logic  := '1';
            eSevenSegments : std_logic  := '1';
            eI2C        : std_logic  := '1';
+           eCoproc     : std_logic  := '1';
            use_cache   : std_logic  := '0');
     port(
 	clk100: in std_logic;
@@ -128,6 +129,7 @@ end process;
 		eSwitchLED  => eSwitchLED,
 		eSevenSegments => eSevenSegments,
 		eI2C        => eI2C,
+		eCoproc     => eCoproc,
 		use_cache   => use_cache
 	)
 	PORT MAP(

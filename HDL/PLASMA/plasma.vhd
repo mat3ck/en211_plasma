@@ -84,6 +84,7 @@ entity plasma is
            eSwitchLED  : std_logic;
            eSevenSegments : std_logic;
            eI2C        : std_logic;
+           eCoproc     : std_logic;
            use_cache   : std_logic;
            CLK_FREQ_HZ : integer := 100000000;        -- by default, we run at 100MHz
            BPP         : integer range 1 to 16 := 16; -- bits per pixel
@@ -758,6 +759,10 @@ vga_bloc : VGA_bitmap_640x480 generic map(bit_per_pixel => 12,    -- number of b
 			--
 	when "100" =>
 		case cpu_address is
+		   when x"40000004" => cpu_data_r <= cop_1_output;
+		   when x"40000034" => cpu_data_r <= cop_2_output;
+         when x"40000064" => cpu_data_r <= cop_3_output;
+         when x"40000094" => cpu_data_r <= cop_4_output;                                    
 			when x"400000C4" => cpu_data_r <= ctrl_SL_output;
 			when x"40000100" => cpu_data_r <= buttons_values;
 			when x"40000104" => cpu_data_r <= buttons_change;
@@ -1384,6 +1389,47 @@ vga_bloc : VGA_bitmap_640x480 generic map(bit_per_pixel => 12,    -- number of b
 		end if;
 	end process;
 
+	coproc_enabled: if eCoproc = '1' generate
+		u2_coproc: entity WORK.coproc_2 port map(
+            clock          => clk,
+            reset          => cop_2_reset,
+            INPUT_1        => cpu_data_w,
+            INPUT_1_valid  => cop_2_valid,
+            OUTPUT_1       => cop_2_output
+         );
+         
+      u1_coproc: entity WORK.coproc_1 port map(
+            clock          => clk,
+            reset          => cop_1_reset,
+            INPUT_1        => cpu_data_w,
+            INPUT_1_valid  => cop_1_valid,
+            OUTPUT_1       => cop_1_output
+         );
+         
+      u3_coproc: entity WORK.coproc_3 port map(
+            clock          => clk,
+            reset          => cop_2_reset,
+            INPUT_1        => cpu_data_w,
+            INPUT_1_valid  => cop_2_valid,
+            OUTPUT_1       => cop_2_output
+         );
+               
+      u4_coproc: entity WORK.coproc_4 port map(
+            clock          => clk,
+            reset          => cop_2_reset,
+            INPUT_1        => cpu_data_w,
+            INPUT_1_valid  => cop_2_valid,
+            OUTPUT_1       => cop_2_output
+         );         
+	end generate;
+	
+   coproc_not_enabled: if eCoproc = '0' generate
+      cop_4_output <= (others => '0');
+      cop_3_output <= (others => '0');
+      cop_2_output <= (others => '0');
+      cop_1_output <= (others => '0');
+   end generate;
+	
 --	u5d_coproc: entity WORK.coproc_3 port map(-- atention 2x coproc 3
 --         clock          => clk,
 --         reset          => cop_4_reset,
