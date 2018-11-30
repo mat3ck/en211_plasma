@@ -520,7 +520,7 @@ $(PLASMA_SOC): $(PLASMA_SOC_SOURCES) $(BOOT_LOADER_HDL) | $(BUILD_DIRS)
 	echo "route_design" >> $(PLASMA_SOC_FLOW)
 	echo "write_bitstream -force $@" >> $(PLASMA_SOC_FLOW)
 	echo "quit" >> $(PLASMA_SOC_FLOW)
-	vivado -source $(PLASMA_SOC_FLOW) -mode tcl -nolog -nojournal
+	/opt/xilinx/vivado/2015.2/Vivado/2015.2/bin/vivado -source $(PLASMA_SOC_FLOW) -mode tcl -nolog -nojournal
 	rm $(PLASMA_SOC_FLOW)
 
 .PHONY: plasma
