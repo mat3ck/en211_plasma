@@ -183,12 +183,7 @@ PLASMA_SOC_FILES = alu.vhd \
 	txt_util.vhd \
 	vga_bitmap_160x100.vhd \
 	vga_ctrl.vhd \
-	vgd_bitmap_640x480.vhd \
-	function_1.vhd \
-	function_2.vhd \
-	function_3.vhd \
-	function_4.vhd \
-	function_5.vhd
+	vgd_bitmap_640x480.vhd
 PLASMA_SOC_SOURCES = $(addprefix $(PLASMA)/,$(PLASMA_SOC_FILES))
 PLASMA_SOC_SOURCES += $(PLASMA_CUSTOM_SOURCES)
 PLASMA_SOC_TOP = top_plasma
