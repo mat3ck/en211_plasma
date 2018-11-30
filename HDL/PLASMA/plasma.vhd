@@ -1390,37 +1390,37 @@ vga_bloc : VGA_bitmap_640x480 generic map(bit_per_pixel => 12,    -- number of b
 	end process;
 
 	coproc_enabled: if eCoproc = '1' generate
-		u2_coproc: entity WORK.coproc_2 port map(
+		u1_coproc: entity WORK.coproc_1 port map(
+               clock          => clk,
+               reset          => cop_1_reset,
+               INPUT_1        => cpu_data_w,
+               INPUT_1_valid  => cop_1_valid,
+               OUTPUT_1       => cop_1_output
+            );
+            
+      u2_coproc: entity WORK.coproc_2 port map(
             clock          => clk,
             reset          => cop_2_reset,
             INPUT_1        => cpu_data_w,
             INPUT_1_valid  => cop_2_valid,
             OUTPUT_1       => cop_2_output
-         );
-         
-      u1_coproc: entity WORK.coproc_1 port map(
-            clock          => clk,
-            reset          => cop_1_reset,
-            INPUT_1        => cpu_data_w,
-            INPUT_1_valid  => cop_1_valid,
-            OUTPUT_1       => cop_1_output
          );
          
       u3_coproc: entity WORK.coproc_3 port map(
             clock          => clk,
-            reset          => cop_2_reset,
+            reset          => cop_3_reset,
             INPUT_1        => cpu_data_w,
-            INPUT_1_valid  => cop_2_valid,
-            OUTPUT_1       => cop_2_output
+            INPUT_1_valid  => cop_3_valid,
+            OUTPUT_1       => cop_3_output
          );
                
       u4_coproc: entity WORK.coproc_4 port map(
             clock          => clk,
-            reset          => cop_2_reset,
+            reset          => cop_4_reset,
             INPUT_1        => cpu_data_w,
-            INPUT_1_valid  => cop_2_valid,
-            OUTPUT_1       => cop_2_output
-         );         
+            INPUT_1_valid  => cop_4_valid,
+            OUTPUT_1       => cop_4_output
+         );        
 	end generate;
 	
    coproc_not_enabled: if eCoproc = '0' generate
