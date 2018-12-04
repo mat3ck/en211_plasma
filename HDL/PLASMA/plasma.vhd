@@ -85,6 +85,7 @@ entity plasma is
            eSevenSegments : std_logic;
            eI2C        : std_logic;
            eCoproc     : std_logic;
+           eVGA        : std_logic;
            use_cache   : std_logic;
            CLK_FREQ_HZ : integer := 100000000;        -- by default, we run at 100MHz
            BPP         : integer range 1 to 16 := 16; -- bits per pixel
@@ -620,26 +621,38 @@ begin  --architecture
          we_select  => ram_byte_we,
          data_out   => ram_data_lm
 		);
+		
 
+   vga_ram_we <= ram_byte_we(0) and enable_ram_vga;
+    
+vga_enabled : if eVGA = '1' generate
 
-vga_bloc : VGA_bitmap_640x480 generic map(bit_per_pixel => 12,    -- number of bits per pixel
-                                          grayscale     => true)           -- should data be displayed in grayscale
-  port map (clk => clk,
-		 clk_vga => clk_VGA,
-       reset => reset,
-       VGA_hs => VGA_hs,   -- horisontal vga syncr.
-       VGA_vs => VGA_vs,   -- vertical vga syncr.
-       VGA_red =>  VGA_red,   -- red output
-       VGA_green => VGA_green,   -- green output
-       VGA_blue => VGA_blue,   -- blue output
-       ADDR => ram_address(20 downto 2),
-       data_in => ram_data_w(11 downto 0),
-       data_write => vga_ram_we,
-       data_out => ram_data_vga );
-       
-   vga_ram_we <= ram_byte_we(0) and enable_ram_vga; 
-	
-	
+   vga_bloc : VGA_bitmap_640x480 generic map(bit_per_pixel => 12,    -- number of bits per pixel
+                                             grayscale     => true)           -- should data be displayed in grayscale
+     port map (clk => clk,
+          clk_vga => clk_VGA,
+          reset => reset,
+          VGA_hs => VGA_hs,   -- horisontal vga syncr.
+          VGA_vs => VGA_vs,   -- vertical vga syncr.
+          VGA_red =>  VGA_red,   -- red output
+          VGA_green => VGA_green,   -- green output
+          VGA_blue => VGA_blue,   -- blue output
+          ADDR => ram_address(20 downto 2),
+          data_in => ram_data_w(11 downto 0),
+          data_write => vga_ram_we,
+          data_out => ram_data_vga );
+   
+   end generate;
+
+vga_not_enabled : if eVGA = '0' generate
+   VGA_hs <= '0';
+   VGA_vs <= '0';
+   VGA_red <= (others => '0');
+   VGA_green <= (others => '0');
+   VGA_blue <= (others => '0');
+   ram_data_vga <= (others => '0');
+end generate;       
+
 	
    u1_cpu: mlite_cpu
       generic map (memory_type => memory_type)

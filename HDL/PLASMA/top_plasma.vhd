@@ -25,6 +25,7 @@ entity top_plasma is
            eSevenSegments : std_logic  := '1';
            eI2C        : std_logic  := '1';
            eCoproc     : std_logic  := '1';
+           eVGA        : std_logic  := '1';
            use_cache   : std_logic  := '0');
     port(
 	clk100: in std_logic;
@@ -130,6 +131,7 @@ end process;
 		eSevenSegments => eSevenSegments,
 		eI2C        => eI2C,
 		eCoproc     => eCoproc,
+		eVGA        => eVGA,
 		use_cache   => use_cache
 	)
 	PORT MAP(

@@ -228,6 +228,7 @@ CONFIG_SWITCH_LED ?= yes
 CONFIG_SEVEN_SEGMENTS ?= yes
 CONFIG_I2C ?= yes
 CONFIG_COPROC ?= yes
+CONFIG_VGA ?= no
 
 ifeq ($(CONFIG_PROJECT),hello)
 PROJECT = $(HELLO)
@@ -310,6 +311,12 @@ PLASMA_SOC_GENERICS += eCoproc=1'b1
 #PLASMA_SOC_FILES += $(PLASMA_CUSTOM_SOURCES)
 else
 PLASMA_SOC_GENERICS += eCoproc=1'b0
+endif
+
+ifeq ($(CONFIG_VGA),yes)
+PLASMA_SOC_GENERICS += eVGA=1'b1
+else
+PLASMA_SOC_GENERICS += eVGA=1'b0
 endif
 
 PLASMA_SOC_ARGUMENTS = $(foreach generic,$(PLASMA_SOC_GENERICS),-generic $(generic))
