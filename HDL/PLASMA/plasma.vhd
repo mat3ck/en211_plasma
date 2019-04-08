@@ -164,7 +164,12 @@ entity plasma is
 				i2c_scl_pmod : inout std_logic;
 
 				gpio0_out    : out std_logic_vector(31 downto 0);
-				gpioA_in     : in  std_logic_vector(31 downto 0));
+				gpioA_in     : in  std_logic_vector(31 downto 0);
+
+                MISO         : in  STD_LOGIC;
+                SS           : out  STD_LOGIC;
+                SCLK         : out  STD_LOGIC;
+                MOSI         : out  STD_LOGIC);
 end; --entity plasma
 
 architecture logic of plasma is
@@ -184,11 +189,11 @@ architecture logic of plasma is
    signal eth_pause_in      : std_logic;
    signal eth_pause         : std_logic;
    signal mem_busy          : std_logic;
-   
+
    signal enable_ram_vga    : std_logic;
    signal vga_ram_we        : std_logic;
    signal ram_data_vga      : std_logic_vector(11 downto 0);
-   
+
    signal enable_misc       : std_logic;
    signal enable_uart       : std_logic;
    signal enable_uart_read  : std_logic;
@@ -311,6 +316,15 @@ architecture logic of plasma is
    signal cache_miss        : std_logic;
    signal cache_hit         : std_logic;
 
+	signal lfsr_valid		: std_logic;
+	signal lfsr_reset		: std_logic;
+	signal lfsr_ready		: std_logic;
+	signal lfsr_data_out	: std_logic_vector(31 downto 0);
+    signal per_i	        : std_logic_vector(31 downto 0) := x"00000007";
+
+    signal joystick_RST              : STD_LOGIC := '0';
+    signal joystick_DIN              : STD_LOGIC_VECTOR (7 downto 0) := "00000000";
+    signal joystick_DOUT             : STD_LOGIC_VECTOR (31 downto 0);
 
 	COMPONENT memory_64k
     Port ( clk       : in   STD_LOGIC;
@@ -337,7 +351,7 @@ architecture logic of plasma is
          VGA_blue        : out std_logic_vector(3 downto 0)   -- blue output
       );
    end component;
-   
+
    component VGA_bitmap_640x480 is
      generic(bit_per_pixel : integer range 1 to 12:=12;    -- number of bits per pixel
              grayscale     : boolean := false);           -- should data be displayed in grayscale
@@ -349,7 +363,7 @@ architecture logic of plasma is
           VGA_red      : out std_logic_vector(3 downto 0);   -- red output
           VGA_green    : out std_logic_vector(3 downto 0);   -- green output
           VGA_blue     : out std_logic_vector(3 downto 0);   -- blue output
-   
+
           ADDR         : in  std_logic_vector(18 downto 0);
           data_in      : in  std_logic_vector(bit_per_pixel - 1 downto 0);
           data_write   : in  std_logic;
@@ -592,6 +606,9 @@ begin  --architecture
    oledsigplot_reset <= '1' when (cpu_address = x"400004D0") AND (cpu_pause = '0') else '0';
    oledsigplot_valid <= '1' when (cpu_address = x"400004D8") AND (cpu_pause = '0') AND (write_enable = '1') else '0';
 
+   lfsr_valid	<= '1' when (cpu_address = x"400004EC") AND (cpu_pause = '0') else '0';
+
+
 --   assert cop_4_valid /= '1' severity failure;
 	--
 	-- ON LIT/ECRIT DANS LA MEMOIRE LOCALE UNIQUEMENT LORSQUE LE BUS
@@ -621,10 +638,10 @@ begin  --architecture
          we_select  => ram_byte_we,
          data_out   => ram_data_lm
 		);
-		
+
 
    vga_ram_we <= ram_byte_we(0) and enable_ram_vga;
-    
+
 vga_enabled : if eVGA = '1' generate
 
    vga_bloc : VGA_bitmap_640x480 generic map(bit_per_pixel => 12,    -- number of bits per pixel
@@ -641,7 +658,7 @@ vga_enabled : if eVGA = '1' generate
           data_in => ram_data_w(11 downto 0),
           data_write => vga_ram_we,
           data_out => ram_data_vga );
-   
+
    end generate;
 
 vga_not_enabled : if eVGA = '0' generate
@@ -651,9 +668,9 @@ vga_not_enabled : if eVGA = '0' generate
    VGA_green <= (others => '0');
    VGA_blue <= (others => '0');
    ram_data_vga <= (others => '0');
-end generate;       
+end generate;
 
-	
+
    u1_cpu: mlite_cpu
       generic map (memory_type => memory_type)
       PORT MAP (
@@ -729,7 +746,7 @@ end generate;
       	when "001" =>         --external (local) RAM
 				cpu_data_r <= ram_data_lm;
       	when "101" =>         --external (local) RAM
-             cpu_data_r <= "00000000000000000000"&ram_data_vga;      
+             cpu_data_r <= "00000000000000000000"&ram_data_vga;
 			-- ON LIT LES DONNEES DES PERIPHERIQUES MISC.
 	when "010" =>         --misc
          	case cpu_address(8 downto 4) is
@@ -775,7 +792,7 @@ end generate;
 		   when x"40000004" => cpu_data_r <= cop_1_output;
 		   when x"40000034" => cpu_data_r <= cop_2_output;
          when x"40000064" => cpu_data_r <= cop_3_output;
-         when x"40000094" => cpu_data_r <= cop_4_output;                                    
+         when x"40000094" => cpu_data_r <= cop_4_output;
 			when x"400000C4" => cpu_data_r <= ctrl_SL_output;
 			when x"40000100" => cpu_data_r <= buttons_values;
 			when x"40000104" => cpu_data_r <= buttons_change;
@@ -788,6 +805,9 @@ end generate;
 			when x"400004AC" => cpu_data_r <= oledterminal_output;
 			when x"400004B8" => cpu_data_r <= oledbitmap_output;
 			when x"400004D8" => cpu_data_r <= oledsigplot_output;
+			when x"400004E0" => cpu_data_r <= lfsr_data_out;
+			when x"400004E8" => cpu_data_r <= (others => lfsr_ready);
+            when x"400004F0" => cpu_data_r <= joystick_DOUT;
 			when others => cpu_data_r <= x"FFFFFFFF";
 		end case;
 
@@ -854,7 +874,7 @@ end generate;
          else
             enable_local_mem <= '0';
          end if;
-         if address_next(31 downto 28) = "0101" then -- 
+         if address_next(31 downto 28) = "0101" then --
             enable_ram_vga <= '1';
          else
             enable_ram_vga <= '0';
@@ -1410,7 +1430,7 @@ end generate;
                INPUT_1_valid  => cop_1_valid,
                OUTPUT_1       => cop_1_output
             );
-            
+
       u2_coproc: entity WORK.coproc_2 port map(
             clock          => clk,
             reset          => cop_2_reset,
@@ -1418,7 +1438,7 @@ end generate;
             INPUT_1_valid  => cop_2_valid,
             OUTPUT_1       => cop_2_output
          );
-         
+
       u3_coproc: entity WORK.coproc_3 port map(
             clock          => clk,
             reset          => cop_3_reset,
@@ -1426,23 +1446,23 @@ end generate;
             INPUT_1_valid  => cop_3_valid,
             OUTPUT_1       => cop_3_output
          );
-               
+
       u4_coproc: entity WORK.coproc_4 port map(
             clock          => clk,
             reset          => cop_4_reset,
             INPUT_1        => cpu_data_w,
             INPUT_1_valid  => cop_4_valid,
             OUTPUT_1       => cop_4_output
-         );        
+         );
 	end generate;
-	
+
    coproc_not_enabled: if eCoproc = '0' generate
       cop_4_output <= (others => '0');
       cop_3_output <= (others => '0');
       cop_2_output <= (others => '0');
       cop_1_output <= (others => '0');
    end generate;
-	
+
 --	u5d_coproc: entity WORK.coproc_3 port map(-- atention 2x coproc 3
 --         clock          => clk,
 --         reset          => cop_4_reset,
@@ -1464,5 +1484,32 @@ end generate;
 --		VGA_green => VGA_green,
 --		VGA_blue => VGA_blue
 --	);
+
+	lfsr : entity work.lsfr
+		generic map (
+			nbits	=> 32
+		)
+		port map (
+			clk		=> clk,
+			rst		=> lfsr_reset,
+			en_i	=> lfsr_valid,
+			seed_i	=> cpu_data_w,
+			per_i	=> per_i,
+
+			val_o	=> lfsr_data_out,
+			ready_o	=> lfsr_ready
+		);
+
+    PmodJSTK : entity work.PmodJSTK
+        Port map (  CLK     => clk,
+                    RST     => joystick_RST,
+                    DIN     => joystick_DIN,
+                    MISO    => MISO,
+                    SS      => SS,
+                    SCLK    => SCLK,
+                    MOSI    => MOSI,
+                    DOUT    => joystick_DOUT
+           );
+
 
 end; --architecture logic

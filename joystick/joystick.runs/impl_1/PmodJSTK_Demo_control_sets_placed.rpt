@@ -1,0 +1,87 @@
+Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2018.2 (lin64) Build 2258646 Thu Jun 14 20:02:38 MDT 2018
+| Date         : Mon Mar 11 10:23:47 2019
+| Host         : seychelles running 64-bit CentOS Linux release 7.3.1611 (Core)
+| Command      : report_control_sets -verbose -file PmodJSTK_Demo_control_sets_placed.rpt
+| Design       : PmodJSTK_Demo
+| Device       : xc7a100t
+------------------------------------------------------------------------------------------
+
+Control Set Information
+
+Table of Contents
+-----------------
+1. Summary
+2. Histogram
+3. Flip-Flop Distribution
+4. Detailed Control Set Information
+
+1. Summary
+----------
+
++----------------------------------------------------------+-------+
+|                          Status                          | Count |
++----------------------------------------------------------+-------+
+| Number of unique control sets                            |    18 |
+| Unused register locations in slices containing registers |    30 |
++----------------------------------------------------------+-------+
+
+
+2. Histogram
+------------
+
++--------+--------------+
+| Fanout | Control Sets |
++--------+--------------+
+|      2 |            1 |
+|      4 |            1 |
+|      6 |            1 |
+|      8 |            4 |
+|     10 |            1 |
+|    16+ |           10 |
++--------+--------------+
+
+
+3. Flip-Flop Distribution
+-------------------------
+
++--------------+-----------------------+------------------------+-----------------+--------------+
+| Clock Enable | Synchronous Set/Reset | Asynchronous Set/Reset | Total Registers | Total Slices |
++--------------+-----------------------+------------------------+-----------------+--------------+
+| No           | No                    | No                     |               6 |            2 |
+| No           | No                    | Yes                    |             148 |           25 |
+| No           | Yes                   | No                     |              32 |            4 |
+| Yes          | No                    | No                     |              10 |            2 |
+| Yes          | No                    | Yes                    |             246 |           35 |
+| Yes          | Yes                   | No                     |               0 |            0 |
++--------------+-----------------------+------------------------+-----------------+--------------+
+
+
+4. Detailed Control Set Information
+-----------------------------------
+
++----------------+----------------------------------------------------+------------------+------------------+----------------+
+|  Clock Signal  |                    Enable Signal                   | Set/Reset Signal | Slice Load Count | Bel Load Count |
++----------------+----------------------------------------------------+------------------+------------------+----------------+
+|  CLK_IBUF_BUFG |                                                    |                  |                1 |              2 |
+|  DispCtrl/DCLK |                                                    |                  |                1 |              4 |
+|  genSndRec/CLK |                                                    | RST_IBUF         |                1 |              6 |
+|  CLK_IBUF_BUFG | DispCtrl/BtoBCD/tmpSR[19]_i_1__0_n_0               | RST_IBUF         |                2 |              8 |
+|  CLK_IBUF_BUFG | DispCtrl/BtoBCD/tmpSR[15]_i_1__0_n_0               | RST_IBUF         |                2 |              8 |
+|  CLK_IBUF_BUFG | DispCtrl/BtoBCD/tmpSR[27]_i_1__0_n_0               | RST_IBUF         |                2 |              8 |
+|  CLK_IBUF_BUFG | DispCtrl/BtoBCD/tmpSR[23]_i_1__0_n_0               | RST_IBUF         |                2 |              8 |
+|  CLK_IBUF_BUFG | DispCtrl/BtoBCD/shiftCount0                        |                  |                2 |             10 |
+| ~CLKOUT_0      | PmodJSTK_Int/SPI_Int/wSR_0                         | RST_IBUF         |                3 |             16 |
+|  CLKOUT_0      | PmodJSTK_Int/SPI_Int/rSR                           | RST_IBUF         |                1 |             16 |
+|  DispCtrl/DCLK |                                                    | RST_IBUF         |                3 |             22 |
+|  CLK_IBUF_BUFG | DispCtrl/BtoBCD/tmpSR[11]_i_1__0_n_0               | RST_IBUF         |                4 |             24 |
+|  CLK_IBUF_BUFG | DispCtrl/BtoBCD/BCDOUT[15]_i_1_n_0                 | RST_IBUF         |                3 |             32 |
+|  CLK_IBUF_BUFG |                                                    | DispCtrl/clear   |                4 |             32 |
+| ~CLKOUT_0      |                                                    | RST_IBUF         |                7 |             42 |
+| ~CLKOUT_0      | PmodJSTK_Int/SPI_Ctrl/FSM_onehot_STATE_reg_n_0_[4] | RST_IBUF         |                4 |             46 |
+|  CLK_IBUF_BUFG |                                                    | RST_IBUF         |               14 |             78 |
+| ~CLKOUT_0      | PmodJSTK_Int/SPI_Ctrl/tmpSR                        | RST_IBUF         |               12 |             80 |
++----------------+----------------------------------------------------+------------------+------------------+----------------+
+
+

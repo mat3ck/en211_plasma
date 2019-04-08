@@ -177,7 +177,7 @@ PLASMA_CUSTOM_FILES = coproc_1.vhd \
 	function_16.vhd \
 	function_17.vhd \
 	function_18.vhd \
-	function_19.vhd 
+	function_19.vhd
 PLASMA_CUSTOM_SOURCES = $(addprefix $(CUSTOM)/$(CONFIG_PROJECT)/,$(PLASMA_CUSTOM_FILES))
 PLASMA_SOC_FILES = alu.vhd \
 	bus_mux.vhd \
@@ -202,7 +202,15 @@ PLASMA_SOC_FILES = alu.vhd \
 	txt_util.vhd \
 	vga_bitmap_160x100.vhd \
 	vga_ctrl.vhd \
-	vgd_bitmap_640x480.vhd
+	vgd_bitmap_640x480.vhd \
+	stop_counter.vhd \
+	lfsr.vhd \
+	ClkDiv_66_67kHz.vhd \
+	ClkDiv_5Hz.vhd \
+	spiCtrl.vhd \
+	spiMode0.vhd \
+	PmodJSTK.vhd
+
 PLASMA_SOC_SOURCES = $(addprefix $(PLASMA)/,$(PLASMA_SOC_FILES))
 PLASMA_SOC_SOURCES += $(PLASMA_CUSTOM_SOURCES)
 PLASMA_SOC_TOP = top_plasma
@@ -217,8 +225,8 @@ BUILD_DIRS += $(OBJ)/plasma
 
 # Configuration
 
-CONFIG_PROJECT ?= tsi
-CONFIG_TARGET ?= nexys4
+CONFIG_PROJECT ?= pgcd
+CONFIG_TARGET ?= nexys4_DDR
 CONFIG_PART ?= xc7a100tcsg324-1
 CONFIG_SERIAL ?= /dev/ttyUSB1
 CONFIG_UART ?= yes
@@ -229,6 +237,8 @@ CONFIG_SEVEN_SEGMENTS ?= yes
 CONFIG_I2C ?= yes
 CONFIG_COPROC ?= yes
 CONFIG_VGA ?= no
+CONFIG_LFSR ?= yes
+CONFIG_JOYSTICK ?= yes
 
 ifeq ($(CONFIG_PROJECT),hello)
 PROJECT = $(HELLO)
@@ -317,6 +327,25 @@ ifeq ($(CONFIG_VGA),yes)
 PLASMA_SOC_GENERICS += eVGA=1'b1
 else
 PLASMA_SOC_GENERICS += eVGA=1'b0
+endif
+
+ifeq ($(CONFIG_LFSR),yes)
+PLASMA_SOC_GENERICS += eLFSR=1'b1
+PLASMA_SOC_FILES += lfsr.vhd
+PLASMA_SOC_FILES += stop_counter.vhd
+else
+PLASMA_SOC_GENERICS += eLFSR=1'b0
+endif
+
+ifeq ($(CONFIG_JOYSTICK),yes)
+PLASMA_SOC_GENERICS += eJOYSTICK=1'b1
+PLASMA_SOC_FILES += ClkDiv_66_67kHz.vhd
+PLASMA_SOC_FILES += ClkDiv_5Hz.vhd
+PLASMA_SOC_FILES += spiCtrl.vhd
+PLASMA_SOC_FILES += spiMode0.vhd
+PLASMA_SOC_FILES += PmodJSTK.vhd
+else
+PLASMA_SOC_GENERICS += eJOYSTICK=1'b0
 endif
 
 PLASMA_SOC_ARGUMENTS = $(foreach generic,$(PLASMA_SOC_GENERICS),-generic $(generic))

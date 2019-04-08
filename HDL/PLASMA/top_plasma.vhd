@@ -71,7 +71,11 @@ entity top_plasma is
 	    OLED_PMOD_DC      	: out STD_LOGIC;
 	    OLED_PMOD_RES     	: out STD_LOGIC;
 	    OLED_PMOD_VCCEN   	: out STD_LOGIC;
-	    OLED_PMOD_EN      	: out STD_LOGIC
+	    OLED_PMOD_EN      	: out STD_LOGIC;
+        MISO                : in  STD_LOGIC;
+        SS                  : out  STD_LOGIC;
+        SCLK                : out  STD_LOGIC;
+        MOSI                : out  STD_LOGIC
 	);
 end top_plasma;
 
@@ -192,6 +196,11 @@ end process;
 		OLED_PMOD_RES   => OLED_PMOD_RES,
 		OLED_PMOD_VCCEN => OLED_PMOD_VCCEN,
 		OLED_PMOD_EN    => OLED_PMOD_EN,
+
+        MISO            => MISO,
+        MOSI            => MOSI,
+        SS              => SS,
+        SCLK            => SCLK,
 
 		gpio0_out       => open,
 		gpioA_in        => x"00000000" --open
